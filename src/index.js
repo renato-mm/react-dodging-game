@@ -78,9 +78,7 @@ class Game extends React.Component {
   renderSquare() { 
     const newPos = this.state.squarePos+"px";   
     return (
-      <Square
-        position = {newPos}
-      />
+      <Square position = {newPos} />
     );
   }
 
@@ -102,9 +100,9 @@ class Game extends React.Component {
     );
   }
 
-  reverseGravity(){
+  reverseGravity(event){
     this.setState({
-      gravity: this.state.gravity === 1 ? -1 : 1,
+      gravity: event.type === "mousedown" ? -2 : 1,
     })
   }
 
@@ -156,11 +154,13 @@ class Game extends React.Component {
     }
   }
 
-  startPauseGame(){
-    this.setState({
-      interval: this.state.pause ? setInterval(this.gameUpdate, 20) : clearInterval(this.state.interval),
-      pause: !this.state.pause,
-    });
+  startPauseGame(event){
+    if(event === null || event.key === 'space'){
+      this.setState({
+        interval: this.state.pause ? setInterval(this.gameUpdate, 20) : clearInterval(this.state.interval),
+        pause: !this.state.pause,
+      });
+    }
   }
 
   resetGame(){
@@ -181,13 +181,17 @@ class Game extends React.Component {
 
     return (
       <div className="game">
-        <div className="game-board" onClick={() => this.reverseGravity()}>
+        <div className="game-board"
+             onMouseDown={(event) => this.reverseGravity(event)}
+             onMouseUp={(event) => this.reverseGravity(event)}
+             //onKeyPress={(event) => this.startPauseGame(event)}
+             >
           {this.renderSquare()}
           {this.renderBarriers()}
         </div>
         <div className="game-info">
           <div><b>SCORE:</b> {this.state.score}</div>
-          <button onClick={() => this.startPauseGame()} disabled={gameOver}>{startPause}</button>
+          <button onClick={() => this.startPauseGame(null)} disabled={gameOver}>{startPause}</button>
           <button onClick={() => this.resetGame()}>Reset</button>
         </div>
       </div>
