@@ -2,6 +2,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
+const maxHeight = 150;
+const minHeight = 20;
+const maxGap = 150;
+const minGap = 50;
+
 function Square(props) {
   const squarePos = {
     top: props.position,
@@ -62,12 +67,10 @@ class Game extends React.Component {
     this.state = {
       squarePos: 290,
       gravity: 1,
-      interval: setInterval(this.gameUpdate, 20),
+      interval: 0,
       score: 0,
-      maxHeight: 150,
-      minHeight: 20,
-      maxGap: 150,
-      minGap: 50,
+      pause: true,
+      gameOver: false,
       barriers: [],
     };
   }
@@ -111,8 +114,8 @@ class Game extends React.Component {
     newPos = (newPos < 20) ? 20 : newPos;
     const barriersCopy = this.updateBarriersPosition();
     if(this.state.score % 150 === 0){
-      const height = Math.floor(Math.random()*(this.state.maxHeight-this.state.minHeight+1)+this.state.minHeight);
-      const gap = Math.floor(Math.random()*(this.state.maxGap-this.state.minGap+1)+this.state.minGap);
+      const height = Math.floor(Math.random()*(maxHeight-minHeight+1)+minHeight);
+      const gap = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
       this.setState({
         barriers: barriersCopy.concat([{
           position: 510,
@@ -146,22 +149,36 @@ class Game extends React.Component {
       if(playerPosition <= firstBarrier.height+20
         || playerPosition+30 >= firstBarrier.gap+firstBarrier.height+20){
         clearInterval(this.state.interval);
+        this.setState({
+          gameOver: true,
+        })
       }
     }
   }
 
+  startPauseGame(){
+    this.setState({
+      interval: this.state.pause ? setInterval(this.gameUpdate, 20) : clearInterval(this.state.interval),
+      pause: !this.state.pause,
+    });
+  }
+
   resetGame(){
-    clearInterval(this.state.interval)
+    clearInterval(this.state.interval);
     this.setState({
       squarePos: 290,
       gravity: 1,
-      interval: setInterval(this.gameUpdate, 20),
       score: 0,
       barriers: [],
+      pause: this.state.pause ? this.state.pause : !this.state.pause,
+      gameOver: false,
     });
   }
 
   render() {
+    const startPause = this.state.pause ? "Start" : "Pause";
+    const gameOver = this.state.gameOver ? "disabled" : '';
+
     return (
       <div className="game">
         <div className="game-board" onClick={() => this.reverseGravity()}>
@@ -169,7 +186,8 @@ class Game extends React.Component {
           {this.renderBarriers()}
         </div>
         <div className="game-info">
-          <div>Score: {this.state.score}</div>
+          <div><b>SCORE:</b> {this.state.score}</div>
+          <button onClick={() => this.startPauseGame()} disabled={gameOver}>{startPause}</button>
           <button onClick={() => this.resetGame()}>Reset</button>
         </div>
       </div>
